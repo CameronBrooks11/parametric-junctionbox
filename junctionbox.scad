@@ -153,7 +153,7 @@ module junctionbox(northholes = 2, westholes = 2, eastholes = 2, southholes = 2)
 
         // mounting screw holes
         radiuspanel_fastenerholes(width = junctionbox_width, height = junctionbox_height,
-                                  thickness = junctionbox_thickness, screwoffset = 20,
+                                  thickness = junctionbox_thickness, screwoffset = junctionbox_mountoffset,
                                   holediam = junctionbox_mountscrewdiam);
     }
 }
