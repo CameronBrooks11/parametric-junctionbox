@@ -23,9 +23,8 @@ mounting holes would need to be used with a washer compressing an
 o-ring or similar in order to seal.
 
 Instructions:
-Edit the parameters just below to generate your junction box.
-In the Main section (at the end of this file), uncomment a line to
-generate the relevant object.
+Edit the parameters just below to generate your junction box, and
+set part to the object to generate.
 /******************************************************************/
 
 $fs = 0.4;
@@ -47,6 +46,15 @@ nh = 2; // north side
 wh = 2; // west side
 eh = 2; // eastside
 sh = 2; // south side
+
+// which object to generate: "box", "lid", "bushing" or "blocker"
+part = "box";
+
+// cable gland reducer bushing (part = "bushing")
+bushing_od = 12;       // the diameter of the cable entry in the gland
+bushing_id = 6.8;      // the diameter of the cable, plus a little for an easy fit
+bushing_length = 30;
+bushing_slitangle = 18; // the slit that lets it compress
 
 module radiuspanel_screwholes(width, height, thickness, radius, holediam)
 {
@@ -233,9 +241,15 @@ module cable_gland_blocker()
 
 /******************************************************************
 Main Section
-Uncomment the appropriate line to generate the object you want
+Set part to the object you want
 *******************************************************************/
-// junctionbox(northholes = nh, southholes = sh, westholes = wh, eastholes = wh);
-//  junctionbox_lid();
-//  cable_gland_bushing(od=12, id=6.8, length=30, slitangle=18);
-cable_gland_blocker();
+if (part == "box")
+    junctionbox(northholes = nh, southholes = sh, westholes = wh, eastholes = eh);
+else if (part == "lid")
+    junctionbox_lid();
+else if (part == "bushing")
+    cable_gland_bushing(od = bushing_od, id = bushing_id, length = bushing_length, slitangle = bushing_slitangle);
+else if (part == "blocker")
+    cable_gland_blocker();
+else
+    assert(false, str("part must be box, lid, bushing or blocker, not ", part));
