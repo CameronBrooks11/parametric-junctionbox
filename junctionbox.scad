@@ -47,7 +47,8 @@ wh = 2; // west side
 eh = 2; // eastside
 sh = 2; // south side
 
-// which object to generate: "box", "lid", "bushing" or "blocker"
+// which object to generate: "box", "lid", "bushing" or "blocker"; "none"
+// generates nothing, for including this file from another
 part = "box";
 
 // cable gland reducer bushing (part = "bushing")
@@ -140,7 +141,7 @@ module solidjunctionbox()
                              holediam = junctionbox_lidscrewdiam);
 }
 
-module junctionbox(northholes = 2, westholes = 2, eastholes = 2, southholes = 2)
+module junctionbox(northholes = nh, westholes = wh, eastholes = eh, southholes = sh)
 {
     // the junction box body
     // parameters specify the number of holes in each face
@@ -244,12 +245,12 @@ Main Section
 Set part to the object you want
 *******************************************************************/
 if (part == "box")
-    junctionbox(northholes = nh, southholes = sh, westholes = wh, eastholes = eh);
+    junctionbox();
 else if (part == "lid")
     junctionbox_lid();
 else if (part == "bushing")
     cable_gland_bushing(od = bushing_od, id = bushing_id, length = bushing_length, slitangle = bushing_slitangle);
 else if (part == "blocker")
     cable_gland_blocker();
-else
-    assert(false, str("part must be box, lid, bushing or blocker, not ", part));
+else if (part != "none")
+    assert(false, str("part must be box, lid, bushing, blocker or none, not ", part));
