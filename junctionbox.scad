@@ -86,17 +86,17 @@ module radiuspanel_mountpillars(width, height, thickness, radius, pillardiam, ho
         cylinder(d = pillardiam, h = thickness);
         translate([ 0, 0, -0.05 ]) cylinder(d = holediam, h = thickness + 0.1);
     }
-    translate([ width - radius, radius, -0.05 ]) difference()
+    translate([ width - radius, radius, 0 ]) difference()
     {
         cylinder(d = pillardiam, h = thickness);
         translate([ 0, 0, -0.05 ]) cylinder(d = holediam, h = thickness + 0.1);
     }
-    translate([ radius, height - radius, -0.05 ]) difference()
+    translate([ radius, height - radius, 0 ]) difference()
     {
         cylinder(d = pillardiam, h = thickness);
         translate([ 0, 0, -0.05 ]) cylinder(d = holediam, h = thickness + 0.1);
     }
-    translate([ width - radius, height - radius, -0.05 ]) difference()
+    translate([ width - radius, height - radius, 0 ]) difference()
     {
         cylinder(d = pillardiam, h = thickness);
         translate([ 0, 0, -0.05 ]) cylinder(d = holediam, h = thickness + 0.1);
