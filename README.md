@@ -2,8 +2,8 @@
 
 A parametric electrical junction box in OpenSCAD: a rounded box with cable-gland
 holes in its walls, a screw-down lid, and two accessories, a reducer bushing for
-a gland and a blocker for an unused hole. It builds on Adam Oellermann's
-[Parametric Electrical Junction Box](https://www.printables.com/model/222985-parametric-electrical-junction-box).
+a gland and a blocker for an unused hole. Set the size, wall thickness and the
+number of gland holes on each side, and pick the part to render.
 
 ![The default box and its lid](assets/junctionbox.png)
 
@@ -36,28 +36,6 @@ The box isn't watertight as printed. A bead of silicone on the rim before
 fitting the lid may seal it, and the floor's mounting screws would need sealing
 washers.
 
-## Changes from the original
-
-Adam Oellermann published two versions of the file, `junctionbox.scad` and
-`junctionbox1.scad`. They differ in one line: the first builds the box with
-`eastholes = wh`, the second with `eastholes = eh`. This repository started
-from `junctionbox.scad`, reformatted, with its main section switched to render
-the blocker. Since then:
-
-- `part` chooses what to render, the box by default, instead of uncommenting a
-  line in the main section.
-- The east wall's holes follow `eh`, as in `junctionbox1.scad`. `junctionbox()`
-  now defaults its hole counts to `nh`, `sh`, `wh` and `eh`, so the main
-  section can't pass the wrong one.
-- `junctionbox_mountoffset` places the floor holes. In both of Adam's versions
-  it was ignored, and the holes were always 20 mm in.
-- All four lid-screw pillars start at the floor. In both versions three of
-  them stood 0.05 mm below it, so the box was 50.05 mm tall and didn't sit
-  flat.
-
-With that pillar fix undone, the default box here renders byte-identical to
-`junctionbox1.scad`'s.
-
 ## Checks
 
 `just test` takes about 1 s on OpenSCAD 2026.10.15. It renders each part and
@@ -66,7 +44,12 @@ in each wall with different counts per side, measures the floor holes at two
 offsets, and checks that an unknown `part` is refused. `just images` renders
 the picture above; it needs ImageMagick's `montage`.
 
-## Licence
+## Origin and licence
 
-Adam Oellermann's original is GPL-3.0-or-later, and so is this; see
-[LICENSE](LICENSE).
+The box grew from Adam Oellermann's
+[Parametric Electrical Junction Box](https://www.printables.com/model/222985-parametric-electrical-junction-box),
+published under GPL-3.0-or-later, and keeps that licence; see
+[LICENSE](LICENSE). Since then it has gained the `part` selector, and fixes
+for three things in the original: the east wall's holes now follow `eh`,
+`junctionbox_mountoffset` now places the floor holes, and all four lid-screw
+pillars start at the floor, so the box sits flat.
