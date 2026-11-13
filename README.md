@@ -38,15 +38,25 @@ washers.
 
 ## Changes from the original
 
-- `part` chooses what to render. Before, the file rendered whichever line of
-  its main section was uncommented, which as committed was the blocker, not
-  the box.
-- The east wall's holes follow `eh`. The box line in the old main section
-  passed `wh` instead.
-- `junctionbox_mountoffset` places the floor holes. It was ignored, and the
-  holes were always 20 mm in.
-- All four lid-screw pillars start at the floor. Three of them stood 0.05 mm
-  below it, so the box was 50.05 mm tall and didn't sit flat.
+Adam Oellermann published two versions of the file, `junctionbox.scad` and
+`junctionbox1.scad`. They differ in one line: the first builds the box with
+`eastholes = wh`, the second with `eastholes = eh`. This repository started
+from `junctionbox.scad`, reformatted, with its main section switched to render
+the blocker. Since then:
+
+- `part` chooses what to render, the box by default, instead of uncommenting a
+  line in the main section.
+- The east wall's holes follow `eh`, as in `junctionbox1.scad`. `junctionbox()`
+  now defaults its hole counts to `nh`, `sh`, `wh` and `eh`, so the main
+  section can't pass the wrong one.
+- `junctionbox_mountoffset` places the floor holes. In both of Adam's versions
+  it was ignored, and the holes were always 20 mm in.
+- All four lid-screw pillars start at the floor. In both versions three of
+  them stood 0.05 mm below it, so the box was 50.05 mm tall and didn't sit
+  flat.
+
+With that pillar fix undone, the default box here renders byte-identical to
+`junctionbox1.scad`'s.
 
 ## Checks
 
