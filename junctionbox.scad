@@ -23,9 +23,8 @@ mounting holes would need to be used with a washer compressing an
 o-ring or similar in order to seal.
 
 Instructions:
-Edit the parameters just below to generate your junction box.
-In the Main section (at the end of this file), uncomment a line to
-generate the relevant object.
+Edit the parameters just below to generate your junction box, and
+set part to the object to generate.
 /******************************************************************/
 
 $fs = 0.4;
@@ -47,6 +46,16 @@ nh = 2; // north side
 wh = 2; // west side
 eh = 2; // eastside
 sh = 2; // south side
+
+// which object to generate: "box", "lid", "bushing" or "blocker"; "none"
+// generates nothing, for including this file from another
+part = "box";
+
+// cable gland reducer bushing (part = "bushing")
+bushing_od = 12;       // the diameter of the cable entry in the gland
+bushing_id = 6.8;      // the diameter of the cable, plus a little for an easy fit
+bushing_length = 30;
+bushing_slitangle = 18; // the slit that lets it compress
 
 module radiuspanel_screwholes(width, height, thickness, radius, holediam)
 {
@@ -86,17 +95,17 @@ module radiuspanel_mountpillars(width, height, thickness, radius, pillardiam, ho
         cylinder(d = pillardiam, h = thickness);
         translate([ 0, 0, -0.05 ]) cylinder(d = holediam, h = thickness + 0.1);
     }
-    translate([ width - radius, radius, -0.05 ]) difference()
+    translate([ width - radius, radius, 0 ]) difference()
     {
         cylinder(d = pillardiam, h = thickness);
         translate([ 0, 0, -0.05 ]) cylinder(d = holediam, h = thickness + 0.1);
     }
-    translate([ radius, height - radius, -0.05 ]) difference()
+    translate([ radius, height - radius, 0 ]) difference()
     {
         cylinder(d = pillardiam, h = thickness);
         translate([ 0, 0, -0.05 ]) cylinder(d = holediam, h = thickness + 0.1);
     }
-    translate([ width - radius, height - radius, -0.05 ]) difference()
+    translate([ width - radius, height - radius, 0 ]) difference()
     {
         cylinder(d = pillardiam, h = thickness);
         translate([ 0, 0, -0.05 ]) cylinder(d = holediam, h = thickness + 0.1);
@@ -132,7 +141,7 @@ module solidjunctionbox()
                              holediam = junctionbox_lidscrewdiam);
 }
 
-module junctionbox(northholes = 2, westholes = 2, eastholes = 2, southholes = 2)
+module junctionbox(northholes = nh, westholes = wh, eastholes = eh, southholes = sh)
 {
     // the junction box body
     // parameters specify the number of holes in each face
@@ -153,7 +162,7 @@ module junctionbox(northholes = 2, westholes = 2, eastholes = 2, southholes = 2)
 
         // mounting screw holes
         radiuspanel_fastenerholes(width = junctionbox_width, height = junctionbox_height,
-                                  thickness = junctionbox_thickness, screwoffset = 20,
+                                  thickness = junctionbox_thickness, screwoffset = junctionbox_mountoffset,
                                   holediam = junctionbox_mountscrewdiam);
     }
 }
@@ -233,9 +242,15 @@ module cable_gland_blocker()
 
 /******************************************************************
 Main Section
-Uncomment the appropriate line to generate the object you want
+Set part to the object you want
 *******************************************************************/
-// junctionbox(northholes = nh, southholes = sh, westholes = wh, eastholes = wh);
-//  junctionbox_lid();
-//  cable_gland_bushing(od=12, id=6.8, length=30, slitangle=18);
-cable_gland_blocker();
+if (part == "box")
+    junctionbox();
+else if (part == "lid")
+    junctionbox_lid();
+else if (part == "bushing")
+    cable_gland_bushing(od = bushing_od, id = bushing_id, length = bushing_length, slitangle = bushing_slitangle);
+else if (part == "blocker")
+    cable_gland_blocker();
+else if (part != "none")
+    assert(false, str("part must be box, lid, bushing, blocker or none, not ", part));
