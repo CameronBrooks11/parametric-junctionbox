@@ -28,7 +28,7 @@ The main parameters:
 | `junctionbox_skin` | 3 | Wall, floor and lid thickness. |
 | `junctionbox_radius` | 8 | Corner radius; the lid-screw pillars are twice this across. |
 | `junctionbox_cablediam` | 20.5 | Gland hole diameter, for M20 glands. |
-| `nh`, `sh`, `wh`, `eh` | 2 each | Gland holes in the north (+y), south, west (−x) and east walls, spaced evenly. |
+| `nh`, `sh`, `wh`, `eh` | 2 each | Gland holes in the north (+y), south, west (−x) and east walls, each centred in an equal share of the wall between the corner pillars. A count whose holes would overlap is refused, with the most that fit. |
 | `junctionbox_lidscrewdiam` | 3 | Lid screw holes, for M3 × 12 self-tapping screws. |
 | `junctionbox_mountscrewdiam`, `junctionbox_mountoffset` | 3, 20 | Four holes in the floor for fixing the box to a surface, this far in from each edge. |
 
@@ -41,15 +41,15 @@ washers.
 `just test` takes about 1 s on OpenSCAD 2026.10.15. It renders each part and
 checks its size, and that it's one piece standing on z = 0. It counts the holes
 in each wall with different counts per side, measures the floor holes at two
-offsets, and checks that an unknown `part` is refused. `just images` renders
+offsets, and checks that an unknown `part`, and four holes along a 100 mm
+wall, are refused. `just images` renders
 the picture above; it needs ImageMagick's `montage`.
 
 ## Origin and licence
 
-The box grew from Adam Oellermann's
-[Parametric Electrical Junction Box](https://www.printables.com/model/222985-parametric-electrical-junction-box),
-published under GPL-3.0-or-later, and keeps that licence; see
-[LICENSE](LICENSE). Since then it has gained the `part` selector, and fixes
-for three things in the original: the east wall's holes now follow `eh`,
-`junctionbox_mountoffset` now places the floor holes, and all four lid-screw
-pillars start at the floor, so the box sits flat.
+The box is a rewrite, under MIT, of an idea from Adam Oellermann's
+[Parametric Electrical Junction Box](https://www.printables.com/model/222985-parametric-electrical-junction-box):
+a rounded box with gland holes, a screwed lid, a reducer bushing and a blocker.
+The code is new; the parameters and parts keep their names, so existing
+settings still work. The earlier GPL-3.0-or-later versions are in this
+repository's history. MIT; see [LICENSE](LICENSE).
