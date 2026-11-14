@@ -63,7 +63,8 @@ def render(openscad, scad, out, defines):
 PARTS = [
     ("box", {"part": '"box"'}, 1, 100, 100, 50),
     ("lid", {"part": '"lid"'}, 1, 100, 100, 3),
-    ("bushing", {"part": '"bushing"'}, 1, 12, 12, 30),
+    # The slit takes the sleeve's widest point off on the +x side.
+    ("bushing", {"part": '"bushing"'}, 1, 11.92, 12, 30),
     ("blocker", {"part": '"blocker"'}, 1, 26.5, 26.5, 5.99),
     ("box 150 x 80 x 60", {"junctionbox_width": 150, "junctionbox_height": 80,
                            "junctionbox_thickness": 60}, 1, 150, 80, 60),
@@ -115,6 +116,11 @@ def main():
         result = subprocess.run([openscad, "-D", 'part="nope"', "-o", out, BOX],
                                 capture_output=True, text=True)
         report("unknown part is refused", "must be box, lid, bushing, blocker or none" in result.stderr,
+               "assertion" if result.returncode else f"exit {result.returncode}")
+
+        # Gland holes that would overlap along a wall are refused, not merged.
+        result = subprocess.run([openscad, "-D", "wh=4", "-o", out, BOX], capture_output=True, text=True)
+        report("4 holes along a 100 mm wall are refused", "at most 3" in result.stderr,
                "assertion" if result.returncode else f"exit {result.returncode}")
 
     print("all checks passed" if not failures else f"{len(failures)} failed")

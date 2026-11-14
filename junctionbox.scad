@@ -1,256 +1,139 @@
-/******************************************************************
-Parametric Junction Box (junctionbox.scad)
-(C) 2022 by Adam Oellermann <adam@oellermann.com>
-(C) 2025 by Cameron Brooks <cbrook49@uwo.ca>    // added
+// junctionbox.scad: a parametric electrical junction box.
+//
+// A rounded box with cable-gland holes in its walls and a screw-down lid, and two
+// accessories: a slit bushing that grips a thin cable in a gland, and a plug for a
+// hole you don't use. The box stands on z = 0 with a corner at the origin.
+// MIT licence; see LICENSE.
 
-The Parametric Junction Box is free software: you can redistribute
-it and/or modify it under the terms of the GNU General Public
-License as published by the Free Software Foundation, either
-version 3 of the License, or (at your option) any later version.
+/* [Part] */
+// What to draw
+part = "box"; // [box, lid, bushing, blocker, none]
 
-This clip is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-General Public License for more details.
+/* [Box] */
+// Outside size along x (mm)
+junctionbox_width = 100; // [40:1:300]
+// Outside size along y (mm)
+junctionbox_height = 100; // [40:1:300]
+// Outside height, along z (mm)
+junctionbox_thickness = 50; // [20:1:200]
+// Wall, floor and lid thickness (mm)
+junctionbox_skin = 3; // [1.6:0.2:8]
+// Corner radius; the lid-screw pillars are twice this across (mm)
+junctionbox_radius = 8; // [4:0.5:20]
 
-You should have received a copy of the GNU General Public License
-along with ScotBot. If not, see <https://www.gnu.org/licenses/>.
--------------------------------------------------------------------
-junctionbox.scad
-Parametric junction box for electric wiring
-Note: the lid as-is does not make for a waterproof seal. Also the
-mounting holes would need to be used with a washer compressing an
-o-ring or similar in order to seal.
+/* [Holes] */
+// Gland hole diameter: 20.5 fits M20 glands (mm)
+junctionbox_cablediam = 20.5; // [6:0.5:40]
+// Gland holes in the north wall (+y)
+nh = 2; // [0:5]
+// Gland holes in the south wall (-y)
+sh = 2; // [0:5]
+// Gland holes in the west wall (-x)
+wh = 2; // [0:5]
+// Gland holes in the east wall (+x)
+eh = 2; // [0:5]
+// Lid screws, for self-tapping screws into the pillars (mm)
+junctionbox_lidscrewdiam = 3; // [2:0.5:5]
+// Holes in the floor for fixing the box to a surface (mm)
+junctionbox_mountscrewdiam = 3; // [2:0.5:6]
+// How far in from each edge the floor holes are (mm)
+junctionbox_mountoffset = 20; // [8:1:60]
 
-Instructions:
-Edit the parameters just below to generate your junction box, and
-set part to the object to generate.
-/******************************************************************/
+/* [Bushing] */
+// Outside diameter: the gland's cable range (mm)
+bushing_od = 12; // [4:0.5:30]
+// Inside diameter: the thinner cable (mm)
+bushing_id = 6.8; // [2:0.1:25]
+// Length (mm)
+bushing_length = 30; // [5:1:60]
+// Width of the slit along it, as an angle (degrees)
+bushing_slitangle = 18; // [5:1:60]
 
-$fs = 0.4;
+/* [Hidden] */
 $fa = 1;
+$fs = 0.4;
 
-// Parameters
-junctionbox_width = 100;        // the x-axis size of the box
-junctionbox_height = 100;       // the y-axis size of the box
-junctionbox_thickness = 50;     // the z-axis size of the box
-junctionbox_skin = 3;           // skin thickness - 3 is probably slightly overkill for a 100x100x50 box
-junctionbox_radius = 8;         // the curve radius of the corners
-junctionbox_lidscrewdiam = 3;   // Use M3x12 self-tapping screws to screw the lid down
-junctionbox_cablediam = 20.5;   // sized for M20 cable glands
-junctionbox_mountscrewdiam = 3; // M3x12 self-tapping screws to fix in place
-junctionbox_mountoffset = 20;   // offset for mounting screws from edge of box
+W = junctionbox_width;
+H = junctionbox_height;
+T = junctionbox_thickness;
+SKIN = junctionbox_skin;
+R = junctionbox_radius;
+// The pillars' centres sit on the corners' arcs' centres.
+CORNERS = [[R, R], [W - R, R], [R, H - R], [W - R, H - R]];
 
-// number of holes on each side
-nh = 2; // north side
-wh = 2; // west side
-eh = 2; // eastside
-sh = 2; // south side
-
-// which object to generate: "box", "lid", "bushing" or "blocker"; "none"
-// generates nothing, for including this file from another
-part = "box";
-
-// cable gland reducer bushing (part = "bushing")
-bushing_od = 12;       // the diameter of the cable entry in the gland
-bushing_id = 6.8;      // the diameter of the cable, plus a little for an easy fit
-bushing_length = 30;
-bushing_slitangle = 18; // the slit that lets it compress
-
-module radiuspanel_screwholes(width, height, thickness, radius, holediam)
-{
-    // these are screwholes for fastening the lid to the body
-    translate([ radius, radius, -0.05 ]) cylinder(d = holediam, h = thickness + 0.1);
-    translate([ width - radius, radius, -0.05 ]) cylinder(d = holediam, h = thickness + 0.1);
-    translate([ radius, height - radius, -0.05 ]) cylinder(d = holediam, h = thickness + 0.1);
-    translate([ width - radius, height - radius, -0.05 ]) cylinder(d = holediam, h = thickness + 0.1);
+// The box's outline, corner at the origin.
+module outline(inset = 0) {
+  hull() for (c = CORNERS) translate(c) circle(r = R - inset);
 }
 
-module radiuspanel_fastenerholes(width, height, thickness, screwoffset, holediam)
-{
-    // these are screwholes for fixing the panel/box to a surface
-    translate([ screwoffset, screwoffset, -0.05 ]) cylinder(d = holediam, h = thickness + 0.1);
-    translate([ width - screwoffset, screwoffset, -0.05 ]) cylinder(d = holediam, h = thickness + 0.1);
-    translate([ screwoffset, height - screwoffset, -0.05 ]) cylinder(d = holediam, h = thickness + 0.1);
-    translate([ width - screwoffset, height - screwoffset, -0.05 ]) cylinder(d = holediam, h = thickness + 0.1);
+module pillars() {
+  for (c = CORNERS) translate([c[0], c[1], 0]) cylinder(r = R, h = T);
 }
 
-module radiuspanel(width, height, thickness, radius)
-{
-    // a rounded-corner panel/solid box
-    hull()
-    {
-        translate([ radius, radius, 0 ]) cylinder(r = radius, h = thickness);
-        translate([ width - radius, radius, 0 ]) cylinder(r = radius, h = thickness);
-        translate([ radius, height - radius, 0 ]) cylinder(r = radius, h = thickness);
-        translate([ width - radius, height - radius, 0 ]) cylinder(r = radius, h = thickness);
-    }
+// n holes through a wall, each centred in an equal share of the wall between the
+// corner pillars, at half the box's inside height. `at` places the wall's start and
+// `dir` runs along it.
+module wall_holes(n, at, dir, span, normal) {
+  assert((span - 4 * R) / n >= junctionbox_cablediam + 1,
+         str(n, " gland holes of ", junctionbox_cablediam, " mm don't fit along a ", span,
+             " mm wall: at most ", floor((span - 4 * R) / (junctionbox_cablediam + 1))));
+  for (i = [1:1:n]) {
+    p = at + dir * (2 * R + (span - 4 * R) * (i - 0.5) / n);
+    translate([p[0], p[1], SKIN + (T - SKIN) / 2])
+      rotate(normal) rotate([0, 90, 0]) cylinder(d = junctionbox_cablediam, h = 4 * SKIN, center = true);
+  }
 }
 
-module radiuspanel_mountpillars(width, height, thickness, radius, pillardiam, holediam)
-{
-    // pillars with screwholes for fixing a lide to
-    translate([ radius, radius, 0 ]) difference()
-    {
-        cylinder(d = pillardiam, h = thickness);
-        translate([ 0, 0, -0.05 ]) cylinder(d = holediam, h = thickness + 0.1);
+module junctionbox() {
+  difference() {
+    union() {
+      difference() {
+        linear_extrude(T) outline();
+        translate([0, 0, SKIN]) linear_extrude(T) outline(SKIN);
+      }
+      pillars();
     }
-    translate([ width - radius, radius, 0 ]) difference()
-    {
-        cylinder(d = pillardiam, h = thickness);
-        translate([ 0, 0, -0.05 ]) cylinder(d = holediam, h = thickness + 0.1);
-    }
-    translate([ radius, height - radius, 0 ]) difference()
-    {
-        cylinder(d = pillardiam, h = thickness);
-        translate([ 0, 0, -0.05 ]) cylinder(d = holediam, h = thickness + 0.1);
-    }
-    translate([ width - radius, height - radius, 0 ]) difference()
-    {
-        cylinder(d = pillardiam, h = thickness);
-        translate([ 0, 0, -0.05 ]) cylinder(d = holediam, h = thickness + 0.1);
-    }
+    // Pilot holes for the lid screws, down the pillars.
+    for (c = CORNERS) translate([c[0], c[1], SKIN]) cylinder(d = junctionbox_lidscrewdiam * 0.8, h = T);
+    // Gland holes: north and south run along x, east and west along y.
+    if (nh > 0) wall_holes(nh, [0, H - SKIN / 2], [1, 0], W, 90);
+    if (sh > 0) wall_holes(sh, [0, SKIN / 2], [1, 0], W, 90);
+    if (wh > 0) wall_holes(wh, [SKIN / 2, 0], [0, 1], H, 0);
+    if (eh > 0) wall_holes(eh, [W - SKIN / 2, 0], [0, 1], H, 0);
+    // Floor holes, junctionbox_mountoffset in from each edge.
+    o = junctionbox_mountoffset;
+    for (x = [o, W - o], y = [o, H - o]) translate([x, y, -1]) cylinder(d = junctionbox_mountscrewdiam, h = SKIN + 2);
+  }
 }
 
-module junctionbox_cableglands(numholes, sidelength)
-{
-    // generates the cable gland entries for a given side
-    if (numholes > 0)
-    {
-        for (i = [1:numholes])
-        {
-            xoff = sidelength * i * (1 / (numholes + 1));
-            translate([ xoff, junctionbox_skin + 0.5, junctionbox_thickness / 2 ]) rotate([ 90, 0, 0 ])
-                cylinder(d = junctionbox_cablediam, h = (junctionbox_skin * 2) + 1);
-        }
-    }
+module lid() {
+  difference() {
+    linear_extrude(SKIN) outline();
+    for (c = CORNERS) translate([c[0], c[1], -1]) cylinder(d = junctionbox_lidscrewdiam + 0.4, h = SKIN + 2);
+  }
 }
 
-module solidjunctionbox()
-{
-    difference()
-    {
-        radiuspanel(width = junctionbox_width, height = junctionbox_height, thickness = junctionbox_thickness,
-                    radius = junctionbox_radius);
-        translate([ junctionbox_skin, junctionbox_skin, junctionbox_skin ]) radiuspanel(
-            width = junctionbox_width - (junctionbox_skin * 2), height = junctionbox_height - (junctionbox_skin * 2),
-            thickness = junctionbox_thickness, radius = junctionbox_radius - junctionbox_skin);
-    }
-    radiuspanel_mountpillars(width = junctionbox_width, height = junctionbox_height, thickness = junctionbox_thickness,
-                             radius = junctionbox_radius, pillardiam = (junctionbox_radius * 2),
-                             holediam = junctionbox_lidscrewdiam);
+// A sleeve with a slit along it, so it closes around a thin cable inside a gland.
+module bushing() {
+  difference() {
+    cylinder(d = bushing_od, h = bushing_length);
+    translate([0, 0, -1]) cylinder(d = bushing_id, h = bushing_length + 2);
+    translate([0, 0, -1]) linear_extrude(bushing_length + 2)
+      polygon([[0, 0], [bushing_od * cos(bushing_slitangle / 2), bushing_od * sin(bushing_slitangle / 2)],
+               [bushing_od * cos(bushing_slitangle / 2), -bushing_od * sin(bushing_slitangle / 2)]]);
+  }
 }
 
-module junctionbox(northholes = nh, westholes = wh, eastholes = eh, southholes = sh)
-{
-    // the junction box body
-    // parameters specify the number of holes in each face
-    difference()
-    {
-        solidjunctionbox();
-
-        // the cable entries
-        // south
-        junctionbox_cableglands(southholes, sidelength = junctionbox_width);
-        // north
-        translate([ 0, junctionbox_height, 0 ]) junctionbox_cableglands(northholes, sidelength = junctionbox_width);
-        // west
-        rotate([ 0, 0, 90 ]) junctionbox_cableglands(westholes, sidelength = junctionbox_height);
-        // east
-        translate([ junctionbox_width, 0, 0 ]) rotate([ 0, 0, 90 ])
-            junctionbox_cableglands(eastholes, sidelength = junctionbox_height);
-
-        // mounting screw holes
-        radiuspanel_fastenerholes(width = junctionbox_width, height = junctionbox_height,
-                                  thickness = junctionbox_thickness, screwoffset = junctionbox_mountoffset,
-                                  holediam = junctionbox_mountscrewdiam);
-    }
+// A plug for an unused gland hole: a cap outside the wall, and a stem that fills the
+// hole through the wall with a little room to push it in.
+module blocker() {
+  cap = 2;
+  cylinder(d = junctionbox_cablediam + 6, h = cap);
+  translate([0, 0, cap - 0.01]) cylinder(d1 = junctionbox_cablediam - 0.2, d2 = junctionbox_cablediam - 0.6, h = SKIN + 1.01);
 }
 
-module junctionbox_lid()
-{
-    // the lid of the junction box
-    difference()
-    {
-        radiuspanel(width = junctionbox_width, height = junctionbox_height, thickness = junctionbox_skin,
-                    radius = junctionbox_radius);
-        radiuspanel_screwholes(width = junctionbox_width, height = junctionbox_height,
-                               thickness = junctionbox_thickness, radius = junctionbox_radius,
-                               holediam = junctionbox_lidscrewdiam);
-    }
-}
-
-module piewedge(radius = 10, angle = 45)
-{
-    // generates a pie wedge
-    polygon(points = [
-        [ 0, 0 ], for (theta = 0; theta < angle; theta = theta + $fa)[radius * cos(theta), radius * sin(theta)],
-        [ radius * cos(angle), radius * sin(angle) ]
-    ]);
-}
-
-module cable_gland_bushing(od, id, length, slitangle)
-{
-    // cable gland reducer bushing
-    // od = the diameter of the cable entry in the gland
-    // id = the diameter of the cable (maybe add 0.4 or so for easy fit
-    // slitangle - the angle of the bushing to cut out for compression
-    // fitting - 18° works well for me
-    // note: the slit will make this not watertight... unless you get some
-    // silicone in there before fastening the cable gland?
-    linear_extrude(height = length) difference()
-    {
-        piewedge(radius = (od / 2), angle = 360 - slitangle);
-        circle(d = id);
-    }
-}
-
-module cable_gland_blocker()
-{
-    // friction-fit blocker for cable gland hole
-    // note: not watertight - it would be better simply not to
-    // generate the unneeded hole, but in a pinch...
-
-    // base plate
-    cylinder(d = junctionbox_cablediam + (junctionbox_skin * 2), h = junctionbox_skin);
-
-    // friction ring
-    taper = 1;
-    ring_thickness = 0.6;
-    cgb_od = junctionbox_cablediam;
-    cgb_top = cgb_od - taper;               // taper
-    cgb_id = cgb_od - (ring_thickness * 2); // makes the thickness of the ring 0.8
-    cgb_itop = cgb_top - taper;             // taper
-    slotangle = 5;
-    translate([ 0, 0, junctionbox_skin - 0.01 ])
-    {
-        difference()
-        {
-            cylinder(d1 = cgb_od, d2 = cgb_top, h = junctionbox_skin);
-            translate([ 0, 0, -0.05 ]) cylinder(d1 = cgb_id, d2 = cgb_itop, h = junctionbox_skin + 0.1);
-            // wiggle room
-            linear_extrude(height = junctionbox_skin + 0.1) piewedge(radius = cgb_od + 1, angle = slotangle);
-            rotate([ 0, 0, 90 ]) linear_extrude(height = junctionbox_skin + 0.1)
-                piewedge(radius = cgb_od + 1, angle = slotangle);
-            rotate([ 0, 0, 180 ]) linear_extrude(height = junctionbox_skin + 0.1)
-                piewedge(radius = cgb_od + 1, angle = slotangle);
-            rotate([ 0, 0, 270 ]) linear_extrude(height = junctionbox_skin + 0.1)
-                piewedge(radius = cgb_od + 1, angle = slotangle);
-        }
-    }
-}
-
-/******************************************************************
-Main Section
-Set part to the object you want
-*******************************************************************/
-if (part == "box")
-    junctionbox();
-else if (part == "lid")
-    junctionbox_lid();
-else if (part == "bushing")
-    cable_gland_bushing(od = bushing_od, id = bushing_id, length = bushing_length, slitangle = bushing_slitangle);
-else if (part == "blocker")
-    cable_gland_blocker();
-else if (part != "none")
-    assert(false, str("part must be box, lid, bushing, blocker or none, not ", part));
+if (part == "box") junctionbox();
+else if (part == "lid") lid();
+else if (part == "bushing") bushing();
+else if (part == "blocker") blocker();
+else assert(part == "none", str("part must be box, lid, bushing, blocker or none, not \"", part, "\""));
