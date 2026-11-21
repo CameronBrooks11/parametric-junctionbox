@@ -63,77 +63,91 @@ CORNERS = [[R, R], [W - R, R], [R, H - R], [W - R, H - R]];
 
 // The box's outline, corner at the origin.
 module outline(inset = 0) {
-  hull() for (c = CORNERS) translate(c) circle(r = R - inset);
+    hull()for (c = CORNERS) translate(c) circle(r=R - inset);
 }
 
 module pillars() {
-  for (c = CORNERS) translate([c[0], c[1], 0]) cylinder(r = R, h = T);
+    for (c = CORNERS) translate([c[0], c[1], 0]) cylinder(r=R, h=T);
 }
 
 // n holes through a wall, each centred in an equal share of the wall between the
 // corner pillars, at half the box's inside height. `at` places the wall's start and
 // `dir` runs along it.
 module wall_holes(n, at, dir, span, normal) {
-  assert((span - 4 * R) / n >= junctionbox_cablediam + 1,
-         str(n, " gland holes of ", junctionbox_cablediam, " mm don't fit along a ", span,
-             " mm wall: at most ", floor((span - 4 * R) / (junctionbox_cablediam + 1))));
-  for (i = [1:1:n]) {
-    p = at + dir * (2 * R + (span - 4 * R) * (i - 0.5) / n);
-    translate([p[0], p[1], SKIN + (T - SKIN) / 2])
-      rotate(normal) rotate([0, 90, 0]) cylinder(d = junctionbox_cablediam, h = 4 * SKIN, center = true);
-  }
+    assert(
+        (span - 4 * R) / n >= junctionbox_cablediam + 1,
+        str(
+            n, " gland holes of ", junctionbox_cablediam, " mm don't fit along a ", span,
+            " mm wall: at most ", floor((span - 4 * R) / (junctionbox_cablediam + 1))
+        )
+    );
+    for (i = [1:1:n]) {
+        p = at + dir * (2 * R + (span - 4 * R) * (i - 0.5) / n);
+        translate([p[0], p[1], SKIN + (T - SKIN) / 2])
+            rotate(normal) rotate([0, 90, 0]) cylinder(d=junctionbox_cablediam, h=4 * SKIN, center=true);
+    }
 }
 
 module junctionbox() {
-  difference() {
-    union() {
-      difference() {
-        linear_extrude(T) outline();
-        translate([0, 0, SKIN]) linear_extrude(T) outline(SKIN);
-      }
-      pillars();
+    difference() {
+        union() {
+            difference() {
+                linear_extrude(T) outline();
+                translate([0, 0, SKIN]) linear_extrude(T) outline(SKIN);
+            }
+            pillars();
+        }
+        // Pilot holes for the lid screws, down the pillars.
+        for (c = CORNERS) translate([c[0], c[1], SKIN]) cylinder(d=junctionbox_lidscrewdiam * 0.8, h=T);
+        // Gland holes: north and south run along x, east and west along y.
+        if (nh > 0) wall_holes(nh, [0, H - SKIN / 2], [1, 0], W, 90);
+        if (sh > 0) wall_holes(sh, [0, SKIN / 2], [1, 0], W, 90);
+        if (wh > 0) wall_holes(wh, [SKIN / 2, 0], [0, 1], H, 0);
+        if (eh > 0) wall_holes(eh, [W - SKIN / 2, 0], [0, 1], H, 0);
+        // Floor holes, junctionbox_mountoffset in from each edge.
+        o = junctionbox_mountoffset;
+        for (x = [o, W - o], y = [o, H - o]) translate([x, y, -1]) cylinder(d=junctionbox_mountscrewdiam, h=SKIN + 2);
     }
-    // Pilot holes for the lid screws, down the pillars.
-    for (c = CORNERS) translate([c[0], c[1], SKIN]) cylinder(d = junctionbox_lidscrewdiam * 0.8, h = T);
-    // Gland holes: north and south run along x, east and west along y.
-    if (nh > 0) wall_holes(nh, [0, H - SKIN / 2], [1, 0], W, 90);
-    if (sh > 0) wall_holes(sh, [0, SKIN / 2], [1, 0], W, 90);
-    if (wh > 0) wall_holes(wh, [SKIN / 2, 0], [0, 1], H, 0);
-    if (eh > 0) wall_holes(eh, [W - SKIN / 2, 0], [0, 1], H, 0);
-    // Floor holes, junctionbox_mountoffset in from each edge.
-    o = junctionbox_mountoffset;
-    for (x = [o, W - o], y = [o, H - o]) translate([x, y, -1]) cylinder(d = junctionbox_mountscrewdiam, h = SKIN + 2);
-  }
 }
 
 module lid() {
-  difference() {
-    linear_extrude(SKIN) outline();
-    for (c = CORNERS) translate([c[0], c[1], -1]) cylinder(d = junctionbox_lidscrewdiam + 0.4, h = SKIN + 2);
-  }
+    difference() {
+        linear_extrude(SKIN) outline();
+        for (c = CORNERS) translate([c[0], c[1], -1]) cylinder(d=junctionbox_lidscrewdiam + 0.4, h=SKIN + 2);
+    }
 }
 
 // A sleeve with a slit along it, so it closes around a thin cable inside a gland.
 module bushing() {
-  difference() {
-    cylinder(d = bushing_od, h = bushing_length);
-    translate([0, 0, -1]) cylinder(d = bushing_id, h = bushing_length + 2);
-    translate([0, 0, -1]) linear_extrude(bushing_length + 2)
-      polygon([[0, 0], [bushing_od * cos(bushing_slitangle / 2), bushing_od * sin(bushing_slitangle / 2)],
-               [bushing_od * cos(bushing_slitangle / 2), -bushing_od * sin(bushing_slitangle / 2)]]);
-  }
+    difference() {
+        cylinder(d=bushing_od, h=bushing_length);
+        translate([0, 0, -1]) cylinder(d=bushing_id, h=bushing_length + 2);
+        translate([0, 0, -1]) linear_extrude(bushing_length + 2)
+                polygon(
+                    [
+                        [0, 0],
+                        [bushing_od * cos(bushing_slitangle / 2), bushing_od * sin(bushing_slitangle / 2)],
+                        [bushing_od * cos(bushing_slitangle / 2), -bushing_od * sin(bushing_slitangle / 2)],
+                    ]
+                );
+    }
 }
 
 // A plug for an unused gland hole: a cap outside the wall, and a stem that fills the
 // hole through the wall with a little room to push it in.
 module blocker() {
-  cap = 2;
-  cylinder(d = junctionbox_cablediam + 6, h = cap);
-  translate([0, 0, cap - 0.01]) cylinder(d1 = junctionbox_cablediam - 0.2, d2 = junctionbox_cablediam - 0.6, h = SKIN + 1.01);
+    cap = 2;
+    cylinder(d=junctionbox_cablediam + 6, h=cap);
+    translate([0, 0, cap - 0.01]) cylinder(d1=junctionbox_cablediam - 0.2, d2=junctionbox_cablediam - 0.6, h=SKIN + 1.01);
 }
 
-if (part == "box") junctionbox();
-else if (part == "lid") lid();
-else if (part == "bushing") bushing();
-else if (part == "blocker") blocker();
-else assert(part == "none", str("part must be box, lid, bushing, blocker or none, not \"", part, "\""));
+if (part == "box")
+    junctionbox();
+else if (part == "lid")
+    lid();
+else if (part == "bushing")
+    bushing();
+else if (part == "blocker")
+    blocker();
+else
+    assert(part == "none", str("part must be box, lid, bushing, blocker or none, not \"", part, "\""));

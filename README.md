@@ -18,7 +18,7 @@ parameters at the top, and set `part`:
 | `"lid"` | The lid, as thick as the walls, with a screw hole at each corner. |
 | `"bushing"` | A slit sleeve that fits in a gland to grip a thinner cable: `bushing_od`, `bushing_id`, `bushing_length`, `bushing_slitangle`. |
 | `"blocker"` | A friction-fit plug for a gland hole you don't use. |
-| `"none"` | Nothing, for when you `include` this file in another. |
+| `"none"` | Nothing, for when you `include` this file in another, as `examples/box_and_lid.scad` does. |
 
 The main parameters:
 
@@ -38,12 +38,15 @@ washers.
 
 ## Checks
 
-`just test` takes about 1 s on OpenSCAD 2026.10.15. It renders each part and
-checks its size, and that it's one piece standing on z = 0. It counts the holes
-in each wall with different counts per side, measures the floor holes at two
-offsets, and checks that an unknown `part`, and four holes along a 100 mm
-wall, are refused. `just images` renders
-the picture above; it needs ImageMagick's `montage`.
+`just test` takes about 2 s on OpenSCAD 2026.10.15. It renders each part and
+checks its size, and that it's one piece standing on z = 0, with no error or
+warning. It counts the holes in each wall with different counts per side,
+measures the floor holes at two offsets, checks the example is a box and a lid
+of the right size, and checks that an unknown `part`, and four holes along a
+100 mm wall, are refused. `just check` checks the `.scad` files are formatted
+with [topiary](https://github.com/tweag/topiary) 0.8.0; `just fmt` formats
+them. `just images` renders the picture above; it needs ImageMagick's
+`montage`.
 
 ## Origin and licence
 
