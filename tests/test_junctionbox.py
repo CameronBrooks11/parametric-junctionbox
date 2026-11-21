@@ -17,6 +17,7 @@ import tempfile
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BOX = os.path.join(ROOT, "junctionbox.scad")
 PROBE = os.path.join(ROOT, "tests", "probe.scad")
+EXAMPLE = os.path.join(ROOT, "examples", "box_and_lid.scad")
 
 
 def measure(path):
@@ -100,6 +101,11 @@ def main():
             ok = (solids == want_solids and abs(bottom) <= 0.001
                   and all(abs(a - b) <= 0.01 for a, b in zip(size, want_size)))
             report(label, ok, f"{solids} solids, {' x '.join(f'{s:.2f}' for s in size)} mm, from z = {bottom:.2f}")
+
+        # The 120 x 80 x 50 box, and its lid 90 mm along -y: two pieces.
+        solids, size, _ = render(openscad, EXAMPLE, out, {})
+        ok = solids == 2 and all(abs(a - b) <= 0.01 for a, b in zip(size, (120, 170, 50)))
+        report("examples/box_and_lid.scad", ok, f"{solids} solids, {' x '.join(f'{s:.2f}' for s in size)} mm")
 
         for side, var in SIDES.items():
             want = HOLES[var]

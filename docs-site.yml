@@ -1,1 +1,3 @@
+title: parametric-junctionbox
+description: A parametric electrical junction box in OpenSCAD, with gland holes, a screw-down lid and two accessories
 models: junctionbox.scad
